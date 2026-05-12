@@ -1,11 +1,14 @@
 // Firebase Auth — Google sign-in.
 //
-// ╔══════════════════════════════════════════════════════════════════════════╗
-// ║  REPLACE the config below with the values from your Firebase web app:    ║
-// ║  Firebase console → Project settings → Your apps → <this app> → Config   ║
-// ║  All values are PUBLIC (they ship to the browser). Allowlist is enforced ║
-// ║  server-side via ADMIN_EMAILS in server/.env.                            ║
-// ╚══════════════════════════════════════════════════════════════════════════╝
+// This config is SHARED across every project under the `uskajitas` umbrella
+// (genshape3d, mission_control, etc.). All values are public — they ship to
+// the browser. The actual security boundary is the ALLOWED_EMAILS allowlist
+// enforced server-side in `server/.env`.
+//
+// Do NOT replace these values. Every new project reuses the same Firebase
+// project (`uskajitas-a4844`) so the user only ever has one Firebase project
+// to manage. The only per-project Firebase task is adding the public domain
+// to Authorized Domains in the console — see the skill's §14.
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -16,12 +19,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey:            '__FIREBASE_API_KEY__',
-  authDomain:        '__FIREBASE_AUTH_DOMAIN__',
-  projectId:         '__FIREBASE_PROJECT_ID__',
-  storageBucket:     '__FIREBASE_STORAGE_BUCKET__',
-  messagingSenderId: '__FIREBASE_MESSAGING_SENDER_ID__',
-  appId:             '__FIREBASE_APP_ID__',
+  apiKey:            'AIzaSyBEjOpHINdKYzUljkJu7XUJysB0O0GrAo0',
+  authDomain:        'uskajitas-a4844.firebaseapp.com',
+  projectId:         'uskajitas-a4844',
+  storageBucket:     'uskajitas-a4844.firebasestorage.app',
+  messagingSenderId: '681192597057',
+  appId:             '1:681192597057:web:33615caa5348c9e081c8c0',
 };
 
 const app = initializeApp(firebaseConfig);
