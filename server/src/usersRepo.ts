@@ -12,7 +12,7 @@ export interface AppUser {
   lastLoginAt: string;
 }
 
-const TABLE = '__PROJECT_NAME___users';
+const TABLE = '__PROJECT_DB___users';
 
 function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS || '')

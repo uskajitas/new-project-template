@@ -24,7 +24,7 @@ export function getDb(): Pool {
 export async function initDb(): Promise<void> {
   const db = getDb();
   await db.query(`
-    CREATE TABLE IF NOT EXISTS __PROJECT_NAME___users (
+    CREATE TABLE IF NOT EXISTS __PROJECT_DB___users (
       email         TEXT PRIMARY KEY,
       name          TEXT NOT NULL DEFAULT '',
       picture       TEXT NOT NULL DEFAULT '',
@@ -34,5 +34,5 @@ export async function initDb(): Promise<void> {
       "lastLoginAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
-  console.log('[db] __PROJECT_NAME___users table ready');
+  console.log('[db] __PROJECT_DB___users table ready');
 }
