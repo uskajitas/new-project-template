@@ -1,9 +1,13 @@
-// Tiny fetch wrapper. Always relative — Vite proxy handles routing to backend in dev,
-// Cloudflare tunnel handles it in prod.
-//
-// We stash the signed-in email at module scope so every request can attach
-// the `x-user-email` header. UserContext calls setCurrentEmail() after sign-in
-// and clears it on sign-out.
+// Tiny fetch wrapper. In dev, paths are relative and the Vite proxy forwards
+// /api -> localhost:backend. In prod, top-level-domain projects serve the app
+// from the apex (e.g. foo.com) while the API lives on api.foo.com, so we must
+// call it with an absolute base — a same-origin /api call would hit the static
+// site and return index.html, which is the classic "login loop" (auth/me
+// returns HTML, user resolves to null, RequireAuth bounces to /login). The base
+// is injected at build time via VITE_API_BASE (client/.env.production, written
+// by scripts/new-project.ps1 for Layout A). Empty falls back to same-origin,
+// which is correct for dev and for subdomain (Layout B) projects.
+const API_BASE = ((import.meta as any).env?.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || '';
 
 let currentEmail: string | null = null;
 
@@ -18,7 +22,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   };
   if (currentEmail) headers['x-user-email'] = currentEmail;
 
-  const res = await fetch(path, { ...init, headers });
+  const res = await fetch(API_BASE + path, { ...init, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`${res.status} ${res.statusText}: ${text}`);
