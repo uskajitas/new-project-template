@@ -18,6 +18,22 @@ sets up the tunnel + DB + PM2, and pushes to your real project repo.
 - Email allowlist enforced server-side (`ADMIN_EMAILS` env)
 - Roles: `admin`, `pro`, `guest` (default `guest`)
 - Auto-created on first login: `uskajitas@gmail.com` = admin, `usquiano@gmail.com` = guest
+- **Anonymous page-view counter** (`<slug>_page_views` table, `/api/track/pageview`
+  beacon on every route change, `/api/track/stats` admin-only summary) — on by
+  default, no login needed, no third-party script.
+- **Public sign-in mode** (`PUBLIC_SIGNUP=true` in `server/.env`) — opens
+  sign-in to anyone instead of the `ALLOWED_EMAILS` list, for portfolio/resume
+  projects. Off by default (existing allowlist behavior unchanged). New
+  sign-ins land as `guest`; the site owner gets an email (via `notify.ts` /
+  Resend) the first time each new person signs in.
+- **Trial cap for costly actions** (`checkAndUseTrial(email)` in
+  `usersRepo.ts`) — call it before any action that costs money (an AI
+  generation call, etc). Non-admin guests get 3 free uses total, then it's
+  blocked until the owner promotes their role. Admins are never limited. Only
+  matters for projects that actually call it — most don't.
+- **`settings.ts`** — generic key/value store per project (`<slug>_settings`
+  table) for secrets that shouldn't live in `.env` (e.g. `RESEND_API_KEY`),
+  so rotating one doesn't mean editing every project's `.env`.
 
 ## Placeholders the agent will replace
 

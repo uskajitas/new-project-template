@@ -9,8 +9,11 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
+import { usePageView } from './usePageView';
 
-const App: React.FC = () => (
+const App: React.FC = () => {
+  usePageView();
+  return (
   <AuthProvider>
     <UserProvider>
       <Routes>
@@ -24,6 +27,7 @@ const App: React.FC = () => (
       </Routes>
     </UserProvider>
   </AuthProvider>
-);
+  );
+};
 
 export default App;
