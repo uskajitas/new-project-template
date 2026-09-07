@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import { initDb } from './db';
 import usersApi from './usersApi';
+import trackingApi from './trackingApi';
 
 const PORT = parseInt(process.env.PORT || '__PROJECT_PORT_BACKEND__', 10);
 
@@ -30,6 +31,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api', usersApi);
+app.use('/api', trackingApi);
 
 // Global error handler — never crash the process on a route error.
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

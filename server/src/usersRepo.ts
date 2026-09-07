@@ -1,4 +1,5 @@
 import { getDb } from './db';
+import { notifyAdmin } from './notify';
 
 export type Role = 'admin' | 'pro' | 'guest';
 
@@ -8,11 +9,17 @@ export interface AppUser {
   picture: string;
   role: Role;
   approved: boolean;
+  trialUsed: number;
   createdAt: string;
   lastLoginAt: string;
 }
 
 const TABLE = '__PROJECT_DB___users';
+
+// How many trial actions a non-admin gets on cost-incurring features before
+// being blocked (see checkAndUseTrial below). Only meaningful for projects
+// that actually call it — most projects have no paid actions and never do.
+const TRIAL_LIMIT = 3;
 
 function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS || '')
@@ -24,7 +31,15 @@ function allowedEmails(): string[] {
     .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 }
 
+// PUBLIC_SIGNUP=true opens sign-in to anyone (portfolio/resume mode) instead
+// of the fixed ALLOWED_EMAILS list. Default is unset/false — existing
+// projects keep today's allowlist-only behavior unless this is turned on.
+function publicSignup(): boolean {
+  return (process.env.PUBLIC_SIGNUP || '').toLowerCase() === 'true';
+}
+
 export function isAllowed(email: string): boolean {
+  if (publicSignup()) return true;
   return allowedEmails().includes(email.toLowerCase());
 }
 
@@ -68,7 +83,36 @@ export async function upsertOnLogin(email: string, name: string, picture: string
     `INSERT INTO ${TABLE} (email, name, picture, role) VALUES ($1, $2, $3, $4) RETURNING *`,
     [e, name, picture, role],
   );
+
+  // First time this project has ever seen this email. Only worth an email
+  // in public-signup mode (a stranger showing up) — not for the two admin
+  // accounts, and not on every ordinary allowlisted login elsewhere.
+  if (publicSignup() && !isAdminEmail(e)) {
+    notifyAdmin(
+      `New sign-in on __PROJECT_NAME__: ${e}`,
+      `${name || e} (${e}) just signed in to __PROJECT_NAME__ for the first time.\n\nRole: guest (trial limit: ${TRIAL_LIMIT} actions on any paid feature).`,
+    ); // fire-and-forget — never awaited, must not slow down or fail login
+  }
+
   return rows[0];
+}
+
+/**
+ * For projects with real per-action cost (e.g. AI generation calls). Call
+ * this BEFORE running the costly action. Admins are never limited. Returns
+ * { ok: true } and increments the counter on success; { ok: false, used,
+ * limit } once a non-admin guest has used up their free trial — the caller
+ * should block the action and show that message, spending nothing further.
+ */
+export async function checkAndUseTrial(email: string): Promise<{ ok: true } | { ok: false; used: number; limit: number }> {
+  const e = email.toLowerCase();
+  if (isAdminEmail(e)) return { ok: true };
+  const user = await getUser(e);
+  if (!user) return { ok: false, used: 0, limit: TRIAL_LIMIT };
+  if (user.role === 'admin' || user.role === 'pro') return { ok: true };
+  if (user.trialUsed >= TRIAL_LIMIT) return { ok: false, used: user.trialUsed, limit: TRIAL_LIMIT };
+  await getDb().query(`UPDATE ${TABLE} SET "trialUsed" = "trialUsed" + 1 WHERE email = $1`, [e]);
+  return { ok: true };
 }
 
 export async function addUser(email: string, role: Role): Promise<AppUser> {
