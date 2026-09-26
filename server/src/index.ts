@@ -7,6 +7,7 @@ import cors from 'cors';
 import { initDb } from './db';
 import usersApi from './usersApi';
 import trackingApi from './trackingApi';
+import { accessGate } from './accessGate';
 
 const PORT = parseInt(process.env.PORT || '__PROJECT_PORT_BACKEND__', 10);
 
@@ -30,6 +31,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, project: '__PROJECT_NAME__', ts: new Date().toISOString() });
 });
 
+app.use('/api', accessGate({ publicPaths: [/^\/health$/, /^\/track\/pageview$/] }));
 app.use('/api', usersApi);
 app.use('/api', trackingApi);
 

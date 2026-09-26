@@ -6,12 +6,8 @@ import {
 
 const router = Router();
 
-// ── Auth-on-the-cheap ────────────────────────────────────────────────────────
-// The client sends `x-user-email` on every protected request. The server
-// looks it up in the DB and uses the row's role for gating. This is NOT
-// cryptographic — anyone who knows an allowlisted email can spoof.
-// TODO before public launch: replace with Firebase Admin SDK ID-token
-// verification on every request. Pattern doc: README.md "Hardening".
+// `x-user-email` is set by accessGate.ts from a verified Firebase ID token;
+// anything the browser sends in that header is discarded first.
 
 function userFromHeader(req: Request): string | null {
   const h = req.header('x-user-email');

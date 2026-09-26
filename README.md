@@ -17,7 +17,11 @@ sets up the tunnel + DB + PM2, and pushes to your real project repo.
 - Users page (admin-only) — add / remove users, change roles
 - Email allowlist enforced server-side (`ADMIN_EMAILS` env)
 - Roles: `admin`, `pro`, `guest` (default `guest`)
-- Auto-created on first login: `uskajitas@gmail.com` = admin, `usquiano@gmail.com` = guest
+- Auto-created on first login: `uskajitas@gmail.com` and `usquiano@gmail.com` are
+  **both admin**, in every project, always. They are the two accounts of the
+  one person who owns all of this. Never scaffold a project where one of them
+  lands as a guest in his own site — he will log in from his other machine and
+  find himself locked out of his own work.
 - **Anonymous page-view counter** (`<slug>_page_views` table, `/api/track/pageview`
   beacon on every route change, `/api/track/stats` admin-only summary) — on by
   default, no login needed, no third-party script.
